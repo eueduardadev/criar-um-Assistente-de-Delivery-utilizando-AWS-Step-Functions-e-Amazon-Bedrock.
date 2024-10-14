@@ -1,0 +1,83 @@
+**Exemplo de Definição de Step Function (Simplificada)**
+
+{
+  "Comment": "Exemplo de Step Function para Assistente de Delivery",
+  "StartAt": "ReceberPedido",
+  "States": {
+    "ReceberPedido": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:account-id:function:ReceberPedido",
+      "Next": "ValidarPedido"
+    },
+    "ValidarPedido": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.pedidoValido",
+          "BooleanEquals": true,
+          "Next": "ProcessarPagamento"
+        },
+        {
+          "Variable": "$.pedidoValido",
+          "BooleanEquals": false,
+          "Next": "PedidoInvalido"
+        }
+      ]
+    },
+    "ProcessarPagamento": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:account-id:function:ProcessarPagamento",
+      "Next": "ConfirmarPagamento"
+    },
+    "ConfirmarPagamento": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.pagamentoConfirmado",
+          "BooleanEquals": true,
+          "Next": "PrepararPedido"
+        },
+        {
+          "Variable": "$.pagamentoConfirmado",
+          "BooleanEquals": false,
+          "Next": "PagamentoFalhou"
+        }
+      ]
+    },
+    "PrepararPedido": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:account-id:function:PrepararPedido",
+      "Next": "DesignarEntregador"
+    },
+    "DesignarEntregador": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:account-id:function:DesignarEntregador",
+      "Next": "RastrearPedido"
+    },
+    "RastrearPedido": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:account-id:function:RastrearPedido",
+      "Next": "ConfirmarEntrega"
+    },
+    "ConfirmarEntrega": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:account-id:function:ConfirmarEntrega",
+      "Next": "SolicitarFeedback"
+    },
+    "SolicitarFeedback": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:account-id:function:SolicitarFeedback",
+      "End": true
+    },
+    "PedidoInvalido": {
+      "Type": "Fail",
+      "Error": "PedidoInvalidoError",
+      "Cause": "Pedido inválido."
+    },
+    "PagamentoFalhou": {
+      "Type": "Fail",
+      "Error": "PagamentoFalhouError",
+      "Cause": "Pagamento falhou."
+    }
+  }
+}
